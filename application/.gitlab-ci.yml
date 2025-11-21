@@ -1,11 +1,10 @@
-stages:         
+stages:        
   - test
   - build
+  - deploy
 
-# variables:
-#   IMAGE_NAME: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
-
-health-test-job: 
+# check status_code = 200
+health-test-job:
   stage: test
   image: python:3.10
   before_script:
@@ -16,19 +15,32 @@ health-test-job:
   only:
     - master
 
-# build:
-#   stage: build
-#   image: docker:24
-#   services:
-#     - docker:24-dind
-#   variables:
-#     PRIVATE_REGISTRY: "registry.project.com"
-#     IMAGE_NAME: "$PRIVATE_REGISTRY/python-app:$CI_COMMIT_SHORT_SHA"
-#   before_script:
-#     - docker login -u "$REGISTRY_USERNAME" -p "$REGISTRY_PASSWORD" $PRIVATE_REGISTRY
-#   script:
-#     - docker build -t $IMAGE_NAME .
-#     - docker push $IMAGE_NAME
-#   only:
-#     - master
+# build and push to private registy
+build:
+  stage: build
+  image: docker:24
+  services:
+    - name: docker:24-dind
+      command: ["--insecure-registry", "94.182.173.70:5000"]
+  variables:
+    PRIVATE_REGISTRY: "94.182.173.70:5000"
+    IMAGE_NAME: "$PRIVATE_REGISTRY/python-app:$CI_COMMIT_SHORT_SHA"
+    DOCKER_API_VERSION: 1.52
+  # before_script:
+  #   - docker login -u "$REGISTRY_USERNAME" -p "$REGISTRY_PASSWORD" $PRIVATE_REGISTRY
+  script:
+    - docker build -t $IMAGE_NAME .
+    - docker push $IMAGE_NAME
+  only:
+    - master
+
+deploy:
+    stage: deploy
+    image: docker:24
+    services:
+      - docker:24-dind
+    script:
+      - echo "deploy on server"
+    only:
+      - master
 

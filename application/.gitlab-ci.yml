@@ -1,0 +1,34 @@
+stages:         
+  - test
+  - build
+
+# variables:
+#   IMAGE_NAME: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+
+health-test-job: 
+  stage: test
+  image: python:3.10
+  before_script:
+    - pip install -r requirements.txt
+    - pip install pytest
+  script:
+    - PYTHONPATH=. pytest test/test.py
+  only:
+    - master
+
+# build:
+#   stage: build
+#   image: docker:24
+#   services:
+#     - docker:24-dind
+#   variables:
+#     PRIVATE_REGISTRY: "registry.project.com"
+#     IMAGE_NAME: "$PRIVATE_REGISTRY/python-app:$CI_COMMIT_SHORT_SHA"
+#   before_script:
+#     - docker login -u "$REGISTRY_USERNAME" -p "$REGISTRY_PASSWORD" $PRIVATE_REGISTRY
+#   script:
+#     - docker build -t $IMAGE_NAME .
+#     - docker push $IMAGE_NAME
+#   only:
+#     - master
+

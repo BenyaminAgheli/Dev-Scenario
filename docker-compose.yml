@@ -1,0 +1,94 @@
+services:
+
+  #python app
+  app:
+    build: ./application
+    container_name: proj-app
+    restart: always
+  #  environments:
+  #    DB_HOST: db
+  #    DB_USER: todouser
+  #    DB_PASS: 1qaz
+  #    DB_NAME: todo_db
+    networks:
+      - docker-net
+    depends_on:
+      - mysql
+
+  #mysql db
+  mysql:
+    image: mysql:8.0
+    container_name: proj-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    networks:
+      - docker-net
+
+  #phpmyadmin
+  phpmyadmin:
+    image: phpmyadmin:5
+    container_name: proj-phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+#      PMA_USER: ${PMA_USER}
+#      PMA_PASSWORD: ${PMA_PASSWORD}
+      PMA_ARBITRARY: 0
+    networks:
+      - docker-net
+    depends_on:
+      - mysql
+
+
+  #gitlab
+  gitlab:
+    image: gitlab/gitlab-ce:18.5.2-ce.0
+    container_name: proj-gitlab
+    hostname: gitlab
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab'
+        gitlab_rails['gitlab_shell_ssh_port'] = 22
+    restart: always
+    volumes:
+      - ./gitlab/config:/etc/gitlab
+      - ./gitlab/logs:/var/log/gitlab
+      - ./gitlab/data:/var/opt/gitlab
+    networks:
+      - docker-net
+    shm_size: "256m"
+
+  #gitlab runner
+  gitlab-runner:
+    image: gitlab/gitlab-runner:latest
+    container_name: proj-gitlab-runner
+    restart: always
+    networks:
+      - docker-net
+    volumes:
+      - ./gitlab-runner/config:/etc/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+    privileged: true
+
+  #nginx
+  nginx:
+    image: nginx:1.29
+    container_name: proj-nginx
+    restart: always
+    ports:
+    - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/index:/usr/share/nginx/html
+    networks:
+      - docker-net
+
+networks:
+  docker-net:
+    driver: bridge

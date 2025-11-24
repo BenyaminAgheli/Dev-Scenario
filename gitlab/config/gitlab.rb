@@ -29,9 +29,7 @@
 ##! On AWS EC2 instances, we also attempt to fetch the public hostname/IP
 ##! address from AWS. For more details, see:
 ##! https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
-
-#I ADDED THIS
-external_url 'http://gitlab.project.com'
+ external_url 'http://gitlab.project.com'
 
 ## Roles for multi-instance GitLab
 ##! The default is to have no roles enabled, which results in GitLab running as an all-in-one instance.

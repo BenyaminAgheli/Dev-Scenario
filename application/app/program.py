@@ -2,8 +2,6 @@ from flask import Flask, request, jsonify
 import mysql.connector
 import os
 
-app = Flask(__name__)
-
 def get_db_connection():
     return mysql.connector.connect(
         host=os.getenv("DB_HOST", "mysql"),
@@ -11,6 +9,25 @@ def get_db_connection():
         password=os.getenv("DB_PASS", "root"),
         database=os.getenv("DB_NAME", "testdb")
     )
+
+
+def create_table():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+	    email VARCHAR(255) NOT NULL
+        );
+    """)
+    conn.commit()
+    conn.close()
+
+
+app = Flask(__name__)
+
+create_table()
 
 @app.route("/users", methods=["GET"])
 def users():

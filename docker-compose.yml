@@ -5,11 +5,11 @@ services:
     build: ./application
     container_name: proj-app
     restart: always
-  #  environments:
-  #    DB_HOST: db
-  #    DB_USER: todouser
-  #    DB_PASS: 1qaz
-  #    DB_NAME: todo_db
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
     networks:
       - docker-net
     depends_on:
